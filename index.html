@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capstone Project Generator</title>
+    
+    <style>
+        /* --- Basic Setup & Typography --- */
+        :root {
+            --bg-color: #f4f4f5;
+            --container-bg: #ffffff;
+            --text-color: #18181b;
+            --border-color: #d4d4d8;
+            --accent-color: #000000;
+            --accent-text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: padding 0.3s ease; /* Smooth transition for responsiveness */
+        }
+
+        /* --- Main Container --- */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: padding 0.3s ease; /* Smooth transition for responsiveness */
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            font-weight: 700;
+            transition: font-size 0.3s ease; /* Smooth transition for responsiveness */
+        }
+
+        /* --- Controls Section --- */
+        .controls {
+            display: flex;
+            flex-wrap: wrap; /* Allows controls to wrap onto the next line on smaller screens */
+            gap: 1.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1 1 200px; /* Flexbox magic: grow, shrink, with a base size of 200px */
+        }
+        
+        .control-group label {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #71717a;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            width: 100%;
+        }
+
+        .difficulty-buttons button {
+            flex-grow: 1;
+            padding: 0.75rem 0.5rem;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-buttons button:first-child { border-radius: 6px 0 0 6px; }
+        .difficulty-buttons button:last-child { border-radius: 0 6px 6px 0; }
+        .difficulty-buttons button:not(:last-child) { border-right: none; }
+
+        .difficulty-buttons button.active {
+            background-color: var(--accent-color);
+            color: var(--accent-text-color);
+            border-color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333'%3E%3Cpath d='M6 9l-6-6h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+        }
+
+        /* --- Generate Button --- */
+        #generate-btn {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: var(--accent-color);
+            color: var(--accent-text-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 2rem;
+        }
+
+        #generate-btn:hover {
+             background-color:#2c2c30;  
+            color:white;
+        }
+
+        /* --- Result Section --- */
+        #result {
+            position: relative;
+            min-height: 250px;
+            padding: 1.5rem;
+            padding-bottom: 4rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: left;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #result.active {
+            border-style: solid;
+        }
+
+        #result h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+            padding-right: 50px;
+            transition: font-size 0.3s ease; /* Smooth transition for responsiveness */
+        }
+        
+        #result p {
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        #result ul {
+            list-style-position: inside;
+            padding-left: 5px;
+        }
+
+        #result li {
+            margin-bottom: 0.5rem;
+        }
+        
+        #result .placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #a1a1aa;
+            font-style: italic;
+        }
+        
+        #next-idea-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--container-bg);
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 1.8rem;
+            line-height: 42px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        #result.active #next-idea-btn {
+            display: block;
+        }
+        
+        #next-idea-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--accent-text-color);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* --- Footer Credits --- */
+        .credits {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #111112;
+            text-align: center;
+        }
+
+        /* --- Responsive Design --- */
+        /* This media query applies styles for screens 768px wide or smaller (tablets and phones) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px; /* Reduce overall padding on small screens to give content more room */
+            }
+            .container {
+                padding: 1.5rem; /* Reduce container padding for a tighter look on mobile */
+            }
+            h1 {
+                font-size: 2rem; /* Make the main title smaller for mobile */
+            }
+            #result h3 {
+                font-size: 1.3rem; /* Adjust the result title size to prevent wrapping */
+            }
+            .controls {
+                flex-direction: column; /* Stack the controls vertically instead of horizontally */
+                gap: 1.5rem;
+            }
+             #generate-btn {
+                font-size: 1.1rem; /* Slightly smaller font on the main button for a better fit */
+            }
+        }
+        
+        /* Media query for very small screens (e.g., iPhone 5/SE) */
+        @media (max-width: 375px) {
+            h1 {
+                font-size: 1.8rem; /* Even smaller title for very narrow displays */
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <h1>Capstone Project Generator</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Select Difficulty</label>
+                <div id="difficulty-selector" class="difficulty-buttons">
+                    <button class="active" data-level="beginner">Beginner</button>
+                    <button data-level="intermediate">Intermediate</button>
+                    <button data-level="advanced">Advanced</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="industry-select">Select Industry</label>
+                <select id="industry-select">
+                    <option value="any">Any Industry</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="ecommerce">E-commerce</option>
+                    <option value="education">Education</option>
+                    <option value="social_media">Social Media</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="travel">Travel</option>
+                    <option value="productivity">Productivity</option>
+                    <option value="iot">Internet of Things (IoT)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="type-select">Select Project Type</label>
+                <select id="type-select">
+                    <option value="any">Any Type</option>
+                    <option value="web_app">Web App</option>
+                    <option value="mobile_app">Mobile App</option>
+                    <option value="data_analysis">Data Analysis</option>
+                    <option value="machine_learning">Machine Learning</option>
+                    <option value="automation_script">Automation Script</option>
+                    <option value="cli_tool">CLI Tool</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="generate-btn">Generate Idea</button>
+
+        <div id="result">
+            <div class="placeholder">Your project idea will appear here...</div>
+        </div>
+
+        <footer class="credits">
+            Developed by <b>Jedrian</b>
+        </footer>
+    </main>
+
+    <script>
+    const projects = {
+        beginner: [
+            { title: "Personal Blog Platform", description: "Create a simple blog where a user can create, read, update, and delete posts. Focus on clean UI and fundamental database operations.", industry: "social_media", type: "web_app", features: ["User Authentication (Register/Login)", "CRUD for posts", "Markdown support for post content"] },
+            { title: "Recipe Book App", description: "A digital recipe book where users can store and categorize their favorite recipes. They can add ingredients, instructions, and a photo.", industry: "entertainment", type: "mobile_app", features: ["Add/Edit/Delete Recipes", "Search by ingredient or name", "Simple, intuitive interface"] },
+            { title: "Student Grade Analyzer", description: "Create a script that reads a CSV file of student grades and calculates statistics like mean, median, and standard deviation for each subject.", industry: "education", type: "data_analysis", features: ["CSV parsing", "Statistical calculations", "Output results to console or a new file"] },
+            { title: "To-Do List with Local Storage", description: "A classic to-do list application that saves tasks in the browser's local storage so they persist after a refresh.", industry: "productivity", type: "web_app", features: ["Add/Remove Tasks", "Mark tasks as complete", "Data persistence with Local Storage"] },
+            { title: "Expense Tracker CLI", description: "A command-line tool to track daily expenses. Users can add expenses with a category and view a summary by date or category.", industry: "finance", type: "cli_tool", features: ["Add expense command", "View summary command", "Data stored in a simple text or JSON file"] },
+            { title: "Pomodoro Timer", description: "A productivity timer that helps users manage their time with work intervals and short breaks. Includes audible alerts.", industry: "productivity", type: "web_app", features: ["Customizable timer lengths", "Audio notifications", "Task tracking for each session"] },
+            { title: "Simple Weather App", description: "A web app that fetches and displays the current weather for a searched city using a free weather API.", industry: "travel", type: "web_app", features: ["API integration (e.g., OpenWeatherMap)", "City search functionality", "Display temperature, humidity, and conditions"] },
+            { title: "Quote of the Day Generator", description: "Build a simple app that shows a new random quote each time a button is clicked, fetched from an API or a local list.", industry: "entertainment", type: "web_app", features: ["Fetch quotes from an API", "Display a new quote on demand", "Option to tweet the quote"] },
+            { title: "Markdown Previewer", description: "A web application where a user can type Markdown in a text area and see the rendered HTML in real-time in a separate pane.", industry: "productivity", type: "web_app", features: ["Real-time text-to-HTML conversion", "Support for basic Markdown syntax", "Clean, side-by-side layout"] },
+            { title: "Tip Calculator", description: "A simple utility to calculate the tip and total bill per person based on the bill amount, tip percentage, and number of people.", industry: "finance", type: "mobile_app", features: ["Input for bill total, tip percentage, and party size", "Instant calculation", "User-friendly sliders or inputs"] },
+            { title: "Rock, Paper, Scissors Game", description: "Create a simple browser game of Rock, Paper, Scissors where the user plays against the computer.", industry: "entertainment", type: "web_app", features: ["User interface for making a choice", "Random computer choice generation", "Score tracking"] },
+            { title: "Basic Portfolio Website", description: "A static website to showcase your skills and projects. Focus on clean design, responsiveness, and a contact form.", industry: "any", type: "web_app", features: ["Responsive design for all devices", "Projects section with descriptions", "A working contact form (can use a service like Formspree)"] },
+            { title: "Color Palette Generator", description: "An application that generates random color palettes. Users can lock colors they like and generate new ones for the remaining slots.", industry: "entertainment", type: "web_app", features: ["Generate random hex colors", "Lock/unlock specific colors", "Copy hex codes to clipboard"] },
+            { title: "BMI Calculator", description: "A health utility that calculates a user's Body Mass Index (BMI) based on their height and weight.", industry: "healthcare", type: "mobile_app", features: ["Inputs for height and weight in metric or imperial", "Display BMI result and category", "Simple and clear UI"] },
+            { title: "File Organizer Script", description: "An automation script that organizes files in a specified directory (e.g., Downloads) into subfolders based on file type (e.g., images, documents, videos).", industry: "productivity", type: "automation_script", features: ["Read directory contents", "Identify file extensions", "Create folders and move files accordingly"] }
+        ],
+        intermediate: [
+            { title: "E-commerce Platform", description: "Build a functional e-commerce site with a shopping cart, user accounts, and product pages fetched from a database or a third-party API.", industry: "ecommerce", type: "web_app", features: ["User Authentication", "Shopping Cart management", "Product catalog with search and filter", "Connect to a payment gateway (e.g., Stripe test mode)"] },
+            { title: "Fitness Tracking App", description: "A mobile app to log workouts, track progress over time, and set fitness goals. Includes charts to visualize progress.", industry: "healthcare", type: "mobile_app", features: ["User profiles", "Workout logging (sets, reps, weight)", "Data visualization with charts", "Local database for data storage"] },
+            { title: "Real-time Chat Application", description: "A web app allowing users to join chat rooms and send messages in real-time. Uses WebSockets for instant communication.", industry: "social_media", type: "web_app", features: ["WebSocket integration (e.g., Socket.IO)", "Multiple chat rooms", "User nickname selection", "Show online users"] },
+            { title: "Sentiment Analysis of Social Media Posts", description: "Analyze a dataset of social media posts (e.g., from Twitter) to determine the overall sentiment on a specific topic.", industry: "social_media", type: "machine_learning", features: ["Fetch data from an API or use a dataset", "Text preprocessing", "Train a sentiment analysis model", "Visualize sentiment distribution"] },
+            { title: "Automated News Aggregator", description: "A script that scrapes several news websites for headlines on a specific topic, and sends a summary email to the user every morning.", industry: "entertainment", type: "automation_script", features: ["Web scraping with libraries like BeautifulSoup or Cheerio", "Email sending automation", "Scheduling (e.g., cron job)"] },
+            { title: "Job Board Aggregator", description: "A platform that scrapes and aggregates job listings from multiple job boards and displays them in a unified, searchable interface.", industry: "productivity", type: "web_app", features: ["Web scraping for multiple sources", "Database to store and manage listings", "Advanced search and filtering (location, title, type)"] },
+            { title: "Habit Tracker with Calendar View", description: "An application to help users build and track habits. Features a calendar-like view to show streaks and progress.", industry: "productivity", type: "web_app", features: ["CRUD for habits", "Calendar heatmap visualization", "User authentication and data persistence"] },
+            { title: "URL Shortening Service", description: "Create your own URL shortener like Bit.ly. Takes a long URL and generates a short, unique alias that redirects to the original URL.", industry: "any", type: "web_app", features: ["URL validation and shortening logic", "Database for storing URL mappings", "Redirection service", "API endpoint for creating short URLs"] },
+            { title: "Movie Watchlist App", description: "An app for movie lovers to search for movies (using an API like TMDB), add them to a watchlist, and mark them as watched.", industry: "entertainment", type: "mobile_app", features: ["Integration with a third-party movie API", "User accounts and personal watchlists", "Search, filter, and view movie details"] },
+            { title: "Simple Forum/Message Board", description: "A web application where users can create topics (threads) and post replies, creating a discussion forum.", industry: "social_media", type: "web_app", features: ["User authentication", "Create/view threads and posts", "Nested comments/replies", "Basic moderation tools"] },
+            { title: "Restaurant Reservation System", description: "A system for a restaurant to manage table reservations. Users can book a table, and admins can view and manage bookings.", industry: "travel", type: "web_app", features: ["User-facing booking interface with date/time selection", "Admin dashboard for managing reservations", "Email confirmations for bookings"] },
+            { title: "Online Quiz Platform", description: "A platform where users can take quizzes on various topics. Admins can create new quizzes with questions and answers.", industry: "education", type: "web_app", features: ["Quiz creation interface for admins", "Quiz taking interface for users", "Automatic scoring and result display"] },
+            { title: "Issue Tracking System", description: "A simplified version of Jira or Trello. Users can create projects, add issues (bugs, features), assign them, and track their status.", industry: "productivity", type: "web_app", features: ["Project and issue CRUD", "Kanban board with drag-and-drop", "User assignment and commenting"] },
+            { title: "Peer-to-Peer File Sharing App", description: "A desktop or web application that allows two users to send files directly to each other using WebRTC.", industry: "any", type: "web_app", features: ["WebRTC for P2P connection", "File selection and transfer progress", "Signaling server for connection setup"] },
+            { title: "Social Media Dashboard", description: "A dashboard that connects to social media APIs (e.g., Twitter, Reddit) to display a user's feed, mentions, and analytics in one place.", industry: "social_media", type: "web_app", features: ["OAuth for secure API authentication", "Displaying data from multiple API endpoints", "Data visualization for analytics"] }
+        ],
+        advanced: [
+            { title: "AI-Powered Medical Diagnosis Aid", description: "Develop a system that takes medical images (e.g., X-rays) and uses a trained Convolutional Neural Network (CNN) to suggest possible diagnoses for review by a professional.", industry: "healthcare", type: "machine_learning", features: ["Image processing pipeline", "Train a deep learning model (CNN)", "Web interface for uploading images and viewing results", "Explainability of results (e.g., using heatmaps)"] },
+            { title: "DeFi Lending Platform", description: "Create a smart contract-based lending platform on a testnet where users can deposit assets to earn interest or borrow assets.", industry: "finance", type: "web_app", features: ["Smart contract development (Solidity)", "Web3 integration with wallets (e.g., MetaMask)", "Frontend to interact with smart contracts", "Understanding of financial protocols"] },
+            { title: "IoT Smart Home Hub", description: "Build a central hub that integrates various smart home devices (lights, sensors) using different protocols (MQTT, HTTP) and provides a unified dashboard for control.", industry: "iot", type: "web_app", features: ["Hardware integration with sensors/actuators", "MQTT broker setup", "Real-time web dashboard using WebSockets", "REST API for device control"] },
+            { title: "Flight Price Prediction Engine", description: "Build a machine learning model that predicts future flight prices based on historical data, seasonality, and other factors. Provide an API endpoint for predictions.", industry: "travel", type: "machine_learning", features: ["Large-scale data collection and cleaning", "Feature engineering for time-series data", "Training and validating a regression model", "Deploying the model as a REST API"] },
+            { title: "Collaborative Real-time Document Editor", description: "A web application like Google Docs where multiple users can edit the same document simultaneously and see changes in real-time.", industry: "productivity", type: "web_app", features: ["Conflict-free Replicated Data Types (CRDTs) or Operational Transformation (OT)", "WebSocket server for real-time synchronization", "Rich text editing capabilities", "User presence and cursor tracking"] },
+            { title: "E-Learning Platform with Video Streaming", description: "A full-featured platform for online courses, including video lectures, student progress tracking, and quizzes. Focus on efficient video delivery.", industry: "education", type: "web_app", features: ["Adaptive bitrate video streaming (HLS/DASH)", "User progression and course management", "Payment integration for course enrollment", "Instructor and student dashboards"] },
+            { title: "Algorithmic Trading Bot (Simulation)", description: "Design and build a bot that executes trades based on a predefined algorithm. Implement it in a simulated/paper trading environment using a brokerage API.", industry: "finance", type: "automation_script", features: ["Integration with a brokerage's API", "Develop and backtest a trading strategy", "Real-time data processing", "Risk management controls"] },
+            { title: "Logistics and Delivery Route Optimizer", description: "An application that solves the 'Traveling Salesman Problem' for a fleet of delivery vehicles to find the most efficient routes.", industry: "travel", type: "web_app", features: ["Integration with a mapping API (e.g., Google Maps)", "Implementation of a route optimization algorithm", "Real-time vehicle tracking visualization", "API for dispatching routes to drivers"] },
+            { title: "ML-Powered Personalized News Feed", description: "Create a news aggregator that learns from a user's reading habits to create a personalized feed of articles they are likely to be interested in.", industry: "entertainment", type: "machine_learning", features: ["Content-based or collaborative filtering model", "User behavior tracking", "Web scraping for articles", "API to serve the personalized feed"] },
+            { title: "Secure E-Voting System", description: "A decentralized application (DApp) on a blockchain that allows for secure, transparent, and anonymous voting.", industry: "finance", type: "web_app", features: ["Smart contract for vote tallying and validation", "Anonymity using cryptographic principles (e.g., zk-SNARKs)", "Frontend for voters to cast ballots securely", "Publicly verifiable results without compromising privacy"] },
+            { title: "Real-time Multiplayer Game", description: "Develop a 2D multiplayer browser game (e.g., an agar.io or slither.io clone) with an authoritative server architecture.", industry: "entertainment", type: "web_app", features: ["Client-side rendering with HTML5 Canvas or WebGL", "Authoritative server with game state logic", "Real-time communication via WebSockets", "Lag compensation and client-side prediction"] },
+            { title: "Customer Churn Prediction Dashboard", description: "An internal tool for a business that uses a machine learning model to predict which customers are likely to churn (cancel their subscription).", industry: "ecommerce", type: "machine_learning", features: ["Data pipeline from a customer database", "Train a classification model (e.g., Logistic Regression, Gradient Boosting)", "Dashboard to visualize at-risk customers", "API to get a churn score for a specific customer"] },
+            { title: "Social Network Analysis Tool", description: "A tool that ingests data from a social network (e.g., Twitter) and visualizes the network of users, identifying key influencers and communities.", industry: "social_media", type: "data_analysis", features: ["Graph data structures and algorithms", "Data visualization with libraries like D3.js or Sigma.js", "Centrality measures (degree, betweenness)", "Community detection algorithms"] },
+            { title: "Automated Code Review Assistant", description: "A tool that integrates with Git and automatically comments on pull requests with suggestions for style violations, potential bugs, or complex code.", industry: "productivity", type: "automation_script", features: ["Integration with GitHub/GitLab APIs", "Static code analysis (linters, complexity checks)", "Posting comments on pull requests automatically", "Configurable rule sets"] },
+            { title: "Music Recommendation System", description: "Build a system that recommends songs to users based on their listening history, using collaborative filtering or content-based methods.", industry: "entertainment", type: "machine_learning", features: ["Work with a large dataset (e.g., Million Song Dataset)", "Implement a recommendation algorithm (e.g., matrix factorization)", "Build an API to serve recommendations", "A simple UI to demonstrate the system"] }
+        ]
+    };
+
+    // DOM Elements and JavaScript logic (no changes needed here)
+    const difficultySelector = document.getElementById('difficulty-selector');
+    const difficultyButtons = difficultySelector.querySelectorAll('button');
+    const industrySelect = document.getElementById('industry-select');
+    const typeSelect = document.getElementById('type-select');
+    const generateBtn = document.getElementById('generate-btn');
+    const resultDiv = document.getElementById('result');
+
+    let currentLevel = 'beginner';
+    let lastGeneratedProject = null;
+
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            difficultyButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentLevel = button.dataset.level;
+        });
+    });
+
+    generateBtn.addEventListener('click', generateProject);
+
+    function generateProject() {
+        const selectedIndustry = industrySelect.value;
+        const selectedType = typeSelect.value;
+
+        let potentialProjects = projects[currentLevel].filter(project => {
+            const industryMatch = selectedIndustry === 'any' || project.industry === selectedIndustry || project.industry === 'any';
+            const typeMatch = selectedType === 'any' || project.type === selectedType || project.type === 'any';
+            return industryMatch && typeMatch;
+        });
+        
+        if (potentialProjects.length === 0) {
+             potentialProjects = projects[currentLevel].filter(project => {
+                const industryMatch = selectedIndustry === 'any' || project.industry === selectedIndustry || project.industry === 'any';
+                const typeMatch = selectedType === 'any' || project.type === selectedType || project.type === 'any';
+                return industryMatch || typeMatch;
+            });
+        }
+        
+        if (potentialProjects.length === 0) {
+            potentialProjects = projects[currentLevel];
+        }
+
+        if (potentialProjects.length > 1 && lastGeneratedProject) {
+            potentialProjects = potentialProjects.filter(p => p.title !== lastGeneratedProject.title);
+        }
+
+        const randomIndex = Math.floor(Math.random() * potentialProjects.length);
+        const project = potentialProjects[randomIndex];
+        lastGeneratedProject = project;
+
+        displayProject(project);
+    }
+
+    function displayProject(project) {
+        resultDiv.classList.add('active');
+
+        if (!project) {
+            resultDiv.innerHTML = `<div class="placeholder">No matching project found. Try different filters!</div>`;
+            return;
+        }
+
+        let featuresHtml = project.features.map(feature => `<li>${feature}</li>`).join('');
+
+        resultDiv.innerHTML = `
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+            <strong>Key Features:</strong>
+            <ul>
+                ${featuresHtml}
+            </ul>
+            <button id="next-idea-btn" title="Get another idea">➔</button>
+        `;
+
+        document.getElementById('next-idea-btn').addEventListener('click', generateProject);
+    }
+    </script>
+</body>
+</html>
